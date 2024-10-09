@@ -37,11 +37,11 @@ jobs:
       id: modified_files
       run: |
         git diff --name-only ${{ github.event.before }} ${{ github.sha }} -- '*.sql' > modified_sql_files.txt
-        if [ ! -s modified_sql_files.txt ]; then
-          echo "No SQL files modified."
-          exit 0
-        fi
-        cat modified_sql_files.txt
+        if [[ -s modified_sql_files.txt ]]; then
+            echo "File has content."
+          else
+            echo "File is empty!"
+          fi
 
     # Step 5: Run each modified SQL file on Snowflake using SnowSQL
     - name: Execute SQL Files on Snowflake
