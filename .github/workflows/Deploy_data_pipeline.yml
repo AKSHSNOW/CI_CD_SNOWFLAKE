@@ -1,49 +1,67 @@
-name: Deploy_data_pipeline
+name: Run Modified SQL Files on Snowflake
 
-#Action will run on pushes to selected branches
 on:
   push:
     branches:
       - DEV
-
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
-  run-snowflake:
+  run-modified-sql:
     runs-on: ubuntu-latest
-
-    env:
-      REPO_NAME: "PROD.TEST.DEMOREPO"
-      # Read connection secrets
-      SNOWFLAKE_CONNECTIONS_DEFAULT_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
-      SNOWFLAKE_CONNECTIONS_DEFAULT_USER: ${{ secrets.SF_USERNAME }}
-      SNOWFLAKE_CONNECTIONS_DEFAULT_PASSWORD: ${{ secrets.SF_PASSWORD }}
-
+    
     steps:
-      # Checkout step is necessary if you want to use a config file from your repo
-      - name: Checkout repository
-        uses: actions/checkout@v3
+    # Step 1: Checkout the repository code
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-      # Install Snowflake CLI GitHub Action and point to config file
-      - uses: Snowflake-Labs/snowflake-cli-action@v1
-        with:
-          cli-version: "latest"
-          default-config-file-path: "config.toml"
+    - name: Install pipx
+      run: |
+        python3 -m pip install --user pipx
+        python3 -m pipx ensurepath
+        # Ensure pipx is available in the current shell session
+        export PATH="$HOME/.local/bin:$PATH"
+    
+    - name: Install Snowflake CLI (snow)
+      run: |
+        pipx install snowflake-cli
 
-      # Update Snowflake's copy of the repository
-      - name: Fetch repository changes
-        run: snow git fetch "${REPO_NAME}"
+    - name: Verify Snowflake CLI Installation
+      run: |
+        snow --help
 
-      # Deploy pipeline with branch specific parameters
-      - name: Deploy data pipeline to ${{ github.ref_name }}
-        run: |
-          BRANCH_NAME=${{ github.ref_name }}
-          if [ "${BRANCH_NAME}" == "main" ]; then
-            RETENTION_TIME=1
-          elif [ "${BRANCH_NAME}" == "DEV" ]; then
-            RETENTION_TIME=0
-          fi
-          snow git execute \
-            "@${REPO_NAME}/branches/${BRANCH_NAME}/*.sql" \
-            -D "environment='${BRANCH_NAME}'"
+    # Step 4: Detect modified SQL files between the current and previous commits
+    - name: Detect Modified SQL Files
+      id: modified_files
+      run: |
+        git diff --name-only ${{ github.event.before }} ${{ github.sha }} -- '*.sql' > modified_sql_files.txt
+        if [ ! -s modified_sql_files.txt ]; then
+          echo "No SQL files modified."
+          exit 0
+        fi
+        cat modified_sql_files.txt
+
+    # Step 5: Run each modified SQL file on Snowflake using SnowSQL
+    - name: Execute SQL Files on Snowflake
+      if: steps.modified_files.outputs.sql_files != ''
+      run: |
+        while read sql_file; do
+          echo "Executing $sql_file on Snowflake..."
+          ./snowsql -a $SNOWFLAKE_ACCOUNT \
+                    -u $SNOWFLAKE_USER \
+                    -p $SNOWFLAKE_PASSWORD \
+                    -d $SNOWFLAKE_DATABASE \
+                    -s $SNOWFLAKE_SCHEMA \
+                    -f $sql_file
+        done < modified_sql_files.txt
+      env:
+        SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+        SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+        SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+        SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
+        SNOWFLAKE_SCHEMA: ${{ secrets.SNOWFLAKE_SCHEMA }}
+
+    # Step 6: Clean up SnowSQL installation (optional)
+    - name: Clean Up
+      run: |
+        rm -f snowsql-1.2.21-linux_x86_64.bash
