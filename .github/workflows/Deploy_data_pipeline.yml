@@ -1,10 +1,7 @@
 name: Run Modified SQL Files on Snowflake
 
 on:
-  push:
-    branches:
-      - DEV
-  workflow_dispatch:
+   workflow_dispatch:
 
 jobs:
   run-modified-sql:
@@ -43,33 +40,15 @@ jobs:
             echo "File is empty!"
           fi
 
-    # Step 5: Run each modified SQL file on Snowflake using SnowSQL
-    - name: Execute SQL Files on Snowflake
-      if: steps.modified_files.outputs.sql_files != ''
+    - name: Check SQL file paths
       run: |
-        while read sql_files; do
-        echo "Running $sql_files"
-          echo "Executing $sql_file on Snowflake..."
-          ./snowsql -a $SNOWFLAKE_ACCOUNT \
-                    -u $SNOWFLAKE_USER \
-                    -p $SNOWFLAKE_PASSWORD \
-                    -d $SNOWFLAKE_DATABASE \
-                    -r $SNOWFLAKE_ROLE \
-                    -w $SNOWFLAKE_WAREHOUSE \
-                    -f $sql_files
+        while read sql_file; do
+          if [[ -f $sql_file ]]; then
+            echo "File exists: $sql_file"
+        else
+          echo "File not found: $sql_file"
+        fi
         done < modified_sql_files.txt
-      env:
-        SNOWFLAKE_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
-        SNOWFLAKE_USER: ${{ secrets.SF_USERNAME }}
-        SNOWFLAKE_PASSWORD: ${{ secrets.SF_PASSWORD }}
-        SNOWFLAKE_DATABASE: ${{ secrets.SF_DATABASE }}
-        SNOWFLAKE_ROLE: ${{ secrets.SF_ROLE }}
-        SNOWFLAKE_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
-        
-      
-      
 
-    # Step 6: Clean up SnowSQL installation (optional)
-    - name: Clean Up
-      run: |
-        rm -f snowsql-1.2.21-linux_x86_64.bash
+        
+
