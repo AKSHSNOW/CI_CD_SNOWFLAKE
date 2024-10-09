@@ -40,15 +40,24 @@ jobs:
             echo "File is empty!"
           fi
 
-    - name: Check SQL file paths
+    - name: Run SQL Files
+      if: steps.modified_files.outputs.sql_files != ''
       run: |
-        while read sql_file; do
-          if [[ -f $sql_file ]]; then
-            echo "File exists: $sql_file"
-        else
-          echo "File not found: $sql_file"
-        fi
-        done < modified_sql_files.txt
+            while read sql_file; do
+               echo "Attempting to run: $sql_file"
+               if [[ -f $sql_file ]]; then  # Check if file exists
+                 echo "Running $sql_file with SnowSQL"
+                 ./snowsql -a $SNOWFLAKE_ACCOUNT \
+                     -u $SNOWFLAKE_USER \
+                     -p $SNOWFLAKE_PASSWORD \
+                     -d $SNOWFLAKE_DATABASE \
+                     -s $SNOWFLAKE_SCHEMA \
+                     -f $sql_file
+               else
+                 echo "Error: SQL file $sql_file not found."
+            fi
+             done < modified_sql_files.txt
+
 
         
 
