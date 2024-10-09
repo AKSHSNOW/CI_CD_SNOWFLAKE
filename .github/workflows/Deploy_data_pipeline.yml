@@ -1,10 +1,10 @@
 name: Run Modified SQL Files on Snowflake
 
 on:
-   push:
+  push:
     branches:
       - DEV
-   workflow_dispatch:
+  workflow_dispatch:
 
 jobs:
   run-modified-sql:
@@ -37,30 +37,36 @@ jobs:
       id: modified_files
       run: |
         git diff --name-only ${{ github.event.before }} ${{ github.sha }} -- '*.sql' > modified_sql_files.txt
-        if [ -s modified_sql_files.txt ]; then
-            echo "File has content."
-          else
-            echo "File is empty!"
-          fi
+        if [ ! -s modified_sql_files.txt ]; then
+          echo "No SQL files modified."
+          exit 0
+        fi
+        cat modified_sql_files.txt
 
-    - name: Run SQL Files
+    # Step 5: Run each modified SQL file on Snowflake using SnowSQL
+    - name: Execute SQL Files on Snowflake
       if: steps.modified_files.outputs.sql_files != ''
       run: |
-            while read sql_file; do
-               echo "Attempting to run: $sql_file"
-               if [[ -f $sql_file ]]; then  # Check if file exists
-                 echo "Running $sql_file with SnowSQL"
-                 ./snowsql -a $SNOWFLAKE_ACCOUNT \
-                     -u $SNOWFLAKE_USER \
-                     -p $SNOWFLAKE_PASSWORD \
-                     -d $SNOWFLAKE_DATABASE \
-                     -s $SNOWFLAKE_SCHEMA \
-                     -f $sql_file
-               else
-                 echo "Error: SQL file $sql_file not found."
-            fi
-             done < modified_sql_files.txt
-
-
+          echo "Executing $sql_file on Snowflake..."
+          ./snowsql -a $SNOWFLAKE_ACCOUNT \
+                    -u $SNOWFLAKE_USER \
+                    -p $SNOWFLAKE_PASSWORD \
+                    -d $SNOWFLAKE_DATABASE \
+                    -r $SNOWFLAKE_ROLE \
+                    -w $SNOWFLAKE_WAREHOUSE \
+                    -f $sql_files
+      env:
+        SNOWFLAKE_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
+        SNOWFLAKE_USER: ${{ secrets.SF_USERNAME }}
+        SNOWFLAKE_PASSWORD: ${{ secrets.SF_PASSWORD }}
+        SNOWFLAKE_DATABASE: ${{ secrets.SF_DATABASE }}
+        SNOWFLAKE_ROLE: ${{ secrets.SF_ROLE }}
+        SNOWFLAKE_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
         
+      
+      
 
+    # Step 6: Clean up SnowSQL installation (optional)
+    - name: Clean Up
+      run: |
+        rm -f snowsql-1.2.21-linux_x86_64.bash
