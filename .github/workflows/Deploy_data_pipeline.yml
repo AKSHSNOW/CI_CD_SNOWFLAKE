@@ -34,7 +34,7 @@ jobs:
       id: modified_files
       run: |
         git diff --name-only ${{ github.event.before }} ${{ github.sha }} -- '*.sql' > modified_sql_files.txt
-        if [[ -s modified_sql_files.txt ]]; then
+        if [ ! -s modified_sql_files.txt ]; then
             echo "File has content."
           else
             echo "File is empty!"
