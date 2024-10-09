@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+  run-snowflake:
     runs-on: ubuntu-latest
 
     env:
@@ -23,7 +23,7 @@ jobs:
     steps:
       # Checkout step is necessary if you want to use a config file from your repo
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       # Install Snowflake CLI GitHub Action and point to config file
       - uses: Snowflake-Labs/snowflake-cli-action@v1
