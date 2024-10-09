@@ -17,20 +17,12 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Install pipx
+    # Install SnowSQL (make sure it is available in the runner)
+    - name: Install SnowSQL
       run: |
-        python3 -m pip install --user pipx
-        python3 -m pipx ensurepath
-        # Ensure pipx is available in the current shell session
-        export PATH="$HOME/.local/bin:$PATH"
-    
-    - name: Install Snowflake CLI (snow)
-      run: |
-        pipx install snowflake-cli
-
-    - name: Verify Snowflake CLI Installation
-      run: |
-        snow --help
+        wget https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-1.2.21-linux_x86_64.bash
+        chmod +x snowsql-1.2.21-linux_x86_64.bash
+        ./snowsql-1.2.21-linux_x86_64.bash -y
 
     # Step 4: Detect modified SQL files between the current and previous commits
     - name: Detect Modified SQL Files
@@ -47,6 +39,8 @@ jobs:
     - name: Execute SQL Files on Snowflake
       if: steps.modified_files.outputs.sql_files != ''
       run: |
+        while read sql_files; do
+        echo "Running $sql_files"
           echo "Executing $sql_file on Snowflake..."
           ./snowsql -a $SNOWFLAKE_ACCOUNT \
                     -u $SNOWFLAKE_USER \
@@ -55,6 +49,7 @@ jobs:
                     -r $SNOWFLAKE_ROLE \
                     -w $SNOWFLAKE_WAREHOUSE \
                     -f $sql_files
+        done < modified_sql_files.txt
       env:
         SNOWFLAKE_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
         SNOWFLAKE_USER: ${{ secrets.SF_USERNAME }}
