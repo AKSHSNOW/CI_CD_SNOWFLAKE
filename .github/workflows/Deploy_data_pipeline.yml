@@ -1,6 +1,9 @@
 name: Run Modified SQL Files on Snowflake
 
 on:
+   push:
+    branches:
+      - DEV
    workflow_dispatch:
 
 jobs:
