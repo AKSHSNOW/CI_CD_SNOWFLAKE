@@ -17,21 +17,14 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Install pipx
+    # Step 2: Install SnowSQL
+    - name: Install SnowSQL
       run: |
-        python3 -m pip install --user pipx
-        python3 -m pipx ensurepath
-        # Ensure pipx is available in the current shell session
-        export PATH="$HOME/.local/bin:$PATH"
-    
-    - name: Install Snowflake CLI (snow)
-      run: |
-        pipx install snowflake-cli
-
-    - name: Verify Snowflake CLI Installation
-      run: |
-        snow --help
-        snow --version
+          # Download and install SnowSQL
+          curl -o snowsql-linux_amd64.tar.gz -L "https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2.0/snowsql-linux_amd64.tar.gz"
+          tar -xzf snowsql-linux_amd64.tar.gz -C /usr/local/bin
+          chmod +x /usr/local/bin/snowsql
+          echo "export PATH=/usr/local/bin:$PATH" >> $GITHUB_ENV
 
     # Step 2: Detect modified SQL files between the current and previous commits
     - name: Detect Modified SQL Files
@@ -59,7 +52,7 @@ jobs:
         while read sql_files; do
         echo "Running $sql_files"
           echo "Executing $sql_file on Snowflake..."
-          ./snowsql -a $SNOWFLAKE_ACCOUNT \
+          snowsql -a $SNOWFLAKE_ACCOUNT \
                     -u $SNOWFLAKE_USER \
                     -p $SNOWFLAKE_PASSWORD \
                     -d $SNOWFLAKE_DATABASE \
