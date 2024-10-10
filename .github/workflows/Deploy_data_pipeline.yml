@@ -71,7 +71,6 @@ jobs:
         
         snowsql -a qua03059.east-us-2.azure \
          -u AKSHPRI \
-         -p 'Password@2233' \
          -d PROD \
          -r ACCOUNTADMIN \
          -w COMPUTE_WH
