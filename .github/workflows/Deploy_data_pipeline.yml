@@ -50,7 +50,10 @@ jobs:
         else
         echo "SnowSQL configuration file not found."
         fi
-          
+        
+    - name: Test SnowSQL Connection
+      run: snowsql -c my_connection -q "SELECT CURRENT_VERSION();"
+    
     - name: Check SnowSQL Installation
       run: |
             echo $PATH  # Verify that the path includes ~/bin
