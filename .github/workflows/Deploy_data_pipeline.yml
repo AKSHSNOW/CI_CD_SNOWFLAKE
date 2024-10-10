@@ -32,8 +32,10 @@ jobs:
     - name: Add SnowSQL to PATH
       run: |
           echo "Adding SnowSQL to PATH"
-          export PATH=$PATH:~/.snowsql/bin
-          snowsql -v  # Check SnowSQL version
+          export PATH="$PATH:$HOME/.snowsql/bin"
+          echo "PATH is now: $PATH"
+          ls -al $HOME/.snowsql/bin  # List the contents of the SnowSQL directory to confirm installation
+          snowsql -v  # Check SnowSQL installation
           
     - name: Verify Snowflake CLI Installation
       run: |
