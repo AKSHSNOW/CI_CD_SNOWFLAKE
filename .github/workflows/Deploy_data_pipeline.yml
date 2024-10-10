@@ -33,22 +33,26 @@ jobs:
         snow --help
         snow --version
 
-    # Step 4: Detect modified SQL files between the current and previous commits
+    # Step 2: Detect modified SQL files between the current and previous commits
     - name: Detect Modified SQL Files
       id: modified_files
       run: |
         git diff --name-only ${{ github.event.before }} ${{ github.sha }} -- '*.sql' > modified_sql_files.txt
-        if [ ! -s modified_sql_files.txt ]; then
-          echo "No SQL files modified."
-          exit 0
-        fi
-        cat modified_sql_files.txt
+        # Set the output if any SQL files were found
+          if [ -s modified_sql_files.txt ]; then
+            # Set the output for later use
+            echo "sql_files=$(cat modified_sql_files.txt)" >> $GITHUB_ENV
+          else
+            echo "No SQL files modified."
+            echo "sql_files=" >> $GITHUB_ENV
+          fi
         
-    - name: Debug Print modified SQL files
+     # Step 3: Print the output of the previous step
+    - name: Print Modified SQL Files
       run: |
-        echo "Modified SQL files: ${{ steps.modified_files.outputs.sql_files }}"
+          echo "The modified SQL files are: ${{ env.sql_files }}"
 
-    # Step 5: Run each modified SQL file on Snowflake using SnowSQL
+    # Step 4: Run each modified SQL file on Snowflake using SnowSQL
     - name: Execute SQL Files on Snowflake
       if: steps.modified_files.outputs.sql_files != ''
       run: |
