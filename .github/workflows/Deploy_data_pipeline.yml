@@ -57,7 +57,7 @@ jobs:
           echo "Role: $SNOWFLAKE_ROLE"
           echo "Warehouse: $SNOWFLAKE_WAREHOUSE"
           
-          ~/bin/snowsql -a $SNOWFLAKE_ACCOUNT \
+                snowsql -a $SNOWFLAKE_ACCOUNT \
                         -u $SNOWFLAKE_USER \
                         -p $SNOWFLAKE_PASSWORD \
                         -d $SNOWFLAKE_DATABASE \
