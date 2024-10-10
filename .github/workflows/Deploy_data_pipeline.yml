@@ -49,6 +49,14 @@ jobs:
         while read sql_file; do
         echo "Running $sql_file"
           echo "Executing $sql_file on Snowflake..."
+          echo "Running $sql_file"
+          echo "Executing $sql_file on Snowflake..."
+          echo "Snowflake Account: $SNOWFLAKE_ACCOUNT"
+          echo "Snowflake User: $SNOWFLAKE_USER"
+          echo "Database: $SNOWFLAKE_DATABASE"
+          echo "Role: $SNOWFLAKE_ROLE"
+          echo "Warehouse: $SNOWFLAKE_WAREHOUSE"
+          
           ~/bin/snowsql -a $SNOWFLAKE_ACCOUNT \
                         -u $SNOWFLAKE_USER \
                         -p $SNOWFLAKE_PASSWORD \
