@@ -17,14 +17,21 @@ jobs:
       with:
         fetch-depth: 0
 
-    # Step 2: Install SnowSQL
     - name: Install SnowSQL
       run: |
-          # Download and install SnowSQL
-          curl -o snowsql-linux_amd64.tar.gz -L "https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2.0/snowsql-linux_amd64.tar.gz"
-          tar -xzf snowsql-linux_amd64.tar.gz -C /usr/local/bin
-          chmod +x /usr/local/bin/snowsql
-          echo "export PATH=/usr/local/bin:$PATH" >> $GITHUB_ENV
+        # Download and install SnowSQL
+        curl -o snowsql-linux_amd64.tar.gz -L "https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2.0/snowsql-linux_amd64.tar.gz"
+    
+        # Check if the file was downloaded correctly
+        if [[ $(file snowsql-linux_amd64.tar.gz) != *gzip* ]]; then
+        echo "Downloaded file is not in gzip format."
+        exit 1
+        fi
+
+        # Extract and install SnowSQL
+        tar -xzf snowsql-linux_amd64.tar.gz -C /usr/local/bin
+        chmod +x /usr/local/bin/snowsql
+        echo "export PATH=/usr/local/bin:$PATH" >> $GITHUB_ENV
 
     # Step 2: Detect modified SQL files between the current and previous commits
     - name: Detect Modified SQL Files
