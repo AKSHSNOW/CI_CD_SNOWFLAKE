@@ -29,12 +29,13 @@ jobs:
         run: |
           git diff --name-only ${{ github.event.before }} ${{ github.sha }} -- '*.sql' > modified_sql_files.txt
           # Check if any SQL files were found and set environment variable
-          if [ -s modified_sql_files.txt ]; then
-            echo "sql_files=$(<modified_sql_files.txt)" >> $GITHUB_ENV
-          else
+            if [ -s modified_sql_files.txt ]; then
+            sql_files=$(cat modified_sql_files.txt | tr '\n' ' ')
+            echo "sql_files=$sql_files" >> $GITHUB_ENV
+            else
             echo "No SQL files modified."
             echo "sql_files=" >> $GITHUB_ENV
-          fi
+            fi
         
       # Step 3: Print the output of the previous step
       - name: Print Modified SQL Files
