@@ -27,7 +27,7 @@ jobs:
       - name: Detect Modified SQL Files
         id: modified_files
         run: |
-          git diff --name-only ${{ github.event.before }} ${{ github.sha }} -- '*.sql' > modified_sql_files.txt
+          git diff --name-only --diff-filter=RM ${{ github.event.before }} ${{ github.sha }} -- '*.sql' > modified_sql_files.txt
           # Check if any SQL files were found and set environment variable
             if [ -s modified_sql_files.txt ]; then
             sql_files=$(cat modified_sql_files.txt | tr '\n' ' ')
