@@ -24,17 +24,17 @@ jobs:
           echo "$HOME/bin" >> $GITHUB_PATH
           echo "PATH=$HOME/bin:$PATH" >> $GITHUB_ENV
 
-    - name: Configure SnowSQL
+    - name: Create SnowSQL Configuration
       run: |
-            mkdir -p ~/.snowsql  # Create the .snowsql directory if it doesn't exist
-            echo "[connections]" > ~/.snowsql/config  # Start the config file
-            echo "accountname = $SNOWFLAKE_ACCOUNT" >> ~/.snowsql/config
-            echo "username = $SNOWFLAKE_USER" >> ~/.snowsql/config
-            echo "password = $SNOWFLAKE_PASSWORD" >> ~/.snowsql/config
-            echo "warehouse = $SNOWFLAKE_WAREHOUSE" >> ~/.snowsql/config
-            echo "database = $SNOWFLAKE_DATABASE" >> ~/.snowsql/config
-            echo "role = $SNOWFLAKE_ROLE" >> ~/.snowsql/config
-
+          mkdir -p $HOME/.snowsql
+          echo "[connections.default]" > $HOME/.snowsql/config
+          echo "accountname = ${{ secrets.SNOWFLAKE_ACCOUNT }}" >> $HOME/.snowsql/config
+          echo "username = ${{ secrets.SNOWFLAKE_USER }}" >> $HOME/.snowsql/config
+          echo "password = ${{ secrets.SNOWFLAKE_PASSWORD }}" >> $HOME/.snowsql/config
+          echo "database = ${{ secrets.SNOWFLAKE_DATABASE }}" >> $HOME/.snowsql/config
+          echo "warehouse = ${{ secrets.SNOWFLAKE_WAREHOUSE }}" >> $HOME/.snowsql/config
+          echo "role = ${{ secrets.SNOWFLAKE_ROLE }}" >> $HOME/.snowsql/config
+          
     - name: Check SnowSQL Installation
       run: |
             echo $PATH  # Verify that the path includes ~/bin
@@ -80,12 +80,7 @@ jobs:
         echo "Running $sql_file"
         echo "Executing $sql_file on Snowflake..."
         
-        snowsql -a qua03059.east-us-2.azure \
-         -u AKSHPRI \
-         --password 'Password@2233' \
-         -d PROD \
-         -r ACCOUNTADMIN \
-         -w COMPUTE_WH
+        snowsql -c default
 
         
         done < modified_sql_files.txt
