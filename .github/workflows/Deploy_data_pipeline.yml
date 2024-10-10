@@ -31,7 +31,7 @@ jobs:
     - name: Verify Snowflake CLI Installation
       run: |
         snow --help
-        ./snowsql -v
+        snow --version
 
     # Step 4: Detect modified SQL files between the current and previous commits
     - name: Detect Modified SQL Files
