@@ -22,7 +22,7 @@ jobs:
           curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-1.2.9-linux_x86_64.bash
           SNOWSQL_DEST=~/bin SNOWSQL_LOGIN_SHELL=~/.profile bash snowsql-1.2.9-linux_x86_64.bash
           echo "$HOME/bin" >> $GITHUB_PATH
-
+          snowsql --help
 
     # Step 2: Detect modified SQL files between the current and previous commits
     - name: Detect Modified SQL Files
@@ -49,22 +49,10 @@ jobs:
       run: |
         while read sql_file; do
         echo "Running $sql_file"
-          echo "Executing $sql_file on Snowflake..."
-          echo "Running $sql_file"
-          echo "Executing $sql_file on Snowflake..."
-          echo "Snowflake Account: $SNOWFLAKE_ACCOUNT"
-          echo "Snowflake User: $SNOWFLAKE_USER"
-          echo "Database: $SNOWFLAKE_DATABASE"
-          echo "Role: $SNOWFLAKE_ROLE"
-          echo "Warehouse: $SNOWFLAKE_WAREHOUSE"
-          
-                snowsql -a $SNOWFLAKE_ACCOUNT \
-                        -u $SNOWFLAKE_USER \
-                        -p $SNOWFLAKE_PASSWORD \
-                        -d $SNOWFLAKE_DATABASE \
-                        -r $SNOWFLAKE_ROLE \
-                        -w $SNOWFLAKE_WAREHOUSE \
-                        
+        echo "Executing $sql_file on Snowflake..."
+        
+        snowsql -a $SNOWFLAKE_ACCOUNT -u $SNOWFLAKE_USER -p $SNOWFLAKE_PASSWORD -d $SNOWFLAKE_DATABASE -r $SNOWFLAKE_ROLE -w $SNOWFLAKE_WAREHOUSE       
+        
         done < modified_sql_files.txt
       env:
         SNOWFLAKE_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
