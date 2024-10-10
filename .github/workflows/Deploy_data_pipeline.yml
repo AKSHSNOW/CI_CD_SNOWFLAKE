@@ -17,12 +17,21 @@ jobs:
       with:
         fetch-depth: 0
 
-    # Install SnowSQL (make sure it is available in the runner)
-    - name: Install SnowSQL
+    - name: Install pipx
       run: |
-        wget https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-1.2.21-linux_x86_64.bash
-        chmod +x snowsql-1.2.21-linux_x86_64.bash
-        ./snowsql-1.2.21-linux_x86_64.bash -y
+        python3 -m pip install --user pipx
+        python3 -m pipx ensurepath
+        # Ensure pipx is available in the current shell session
+        export PATH="$HOME/.local/bin:$PATH"
+    
+    - name: Install Snowflake CLI (snow)
+      run: |
+        pipx install snowflake-cli
+
+    - name: Verify Snowflake CLI Installation
+      run: |
+        snow --help
+        ./snowsql -v
 
     # Step 4: Detect modified SQL files between the current and previous commits
     - name: Detect Modified SQL Files
