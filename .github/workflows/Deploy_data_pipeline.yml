@@ -27,13 +27,24 @@ jobs:
     - name: Create SnowSQL Configuration
       run: |
           mkdir -p $HOME/.snowsql
-          echo "[connections.default]" > $HOME/.snowsql/config
-          echo "accountname = ${{ secrets.SNOWFLAKE_ACCOUNT }}" >> $HOME/.snowsql/config
-          echo "username = ${{ secrets.SNOWFLAKE_USER }}" >> $HOME/.snowsql/config
-          echo "password = ${{ secrets.SNOWFLAKE_PASSWORD }}" >> $HOME/.snowsql/config
-          echo "database = ${{ secrets.SNOWFLAKE_DATABASE }}" >> $HOME/.snowsql/config
-          echo "warehouse = ${{ secrets.SNOWFLAKE_WAREHOUSE }}" >> $HOME/.snowsql/config
-          echo "role = ${{ secrets.SNOWFLAKE_ROLE }}" >> $HOME/.snowsql/config
+          echo "[connections]" > $HOME/.snowsql/config
+          echo "default = my_connection" >> $HOME/.snowsql/config
+          echo "[my_connection]" >> $HOME/.snowsql/config
+          echo "accountname = ${{ secrets.SF_ACCOUNT }}" >> $HOME/.snowsql/config
+          echo "username = ${{ secrets.SF_USERNAME }}" >> $HOME/.snowsql/config
+          echo "password = ${{ secrets.SF_PASSWORD }}" >> $HOME/.snowsql/config
+          echo "database = ${{ secrets.SF_DATABASE }}" >> $HOME/.snowsql/config
+          echo "warehouse = ${{ secrets.SF_WAREHOUSE }}" >> $HOME/.snowsql/config
+          echo "role = ${{ secrets.SF_ROLE }}" >> $HOME/.snowsql/config
+
+    - name: Debug Print SnowSQL Configuration
+      run: |
+        if [ -f "$HOME/.snowsql/config" ]; then
+        echo "SnowSQL Configuration found:"
+        cat "$HOME/.snowsql/config"
+        else
+        echo "SnowSQL configuration file not found."
+        fi
           
     - name: Check SnowSQL Installation
       run: |
@@ -41,17 +52,6 @@ jobs:
             which snowsql  # This should now return the path to the snowsql executable
             snowsql --version  # Confirm that SnowSQL is installed and working
             snowsql --help
-
-    - name: Configure SnowSQL
-      run: |
-            mkdir -p ~/.snowsql  # Create the .snowsql directory if it doesn't exist
-            echo "[connections]" > ~/.snowsql/config  # Start the config file
-            echo "accountname = $SNOWFLAKE_ACCOUNT" >> ~/.snowsql/config
-            echo "username = $SNOWFLAKE_USER" >> ~/.snowsql/config
-            echo "password = $SNOWFLAKE_PASSWORD" >> ~/.snowsql/config
-            echo "warehouse = $SNOWFLAKE_WAREHOUSE" >> ~/.snowsql/config
-            echo "database = $SNOWFLAKE_DATABASE" >> ~/.snowsql/config
-            echo "role = $SNOWFLAKE_ROLE" >> ~/.snowsql/config
 
     # Step 2: Detect modified SQL files between the current and previous commits
     - name: Detect Modified SQL Files
@@ -80,7 +80,7 @@ jobs:
         echo "Running $sql_file"
         echo "Executing $sql_file on Snowflake..."
         
-        snowsql -c default
+        snowsql -c my_connection
 
         
         done < modified_sql_files.txt
