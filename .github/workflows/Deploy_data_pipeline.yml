@@ -31,6 +31,7 @@ jobs:
     - name: Verify Snowflake CLI Installation
       run: |
         snow --help
+        snow --version
 
     # Step 4: Detect modified SQL files between the current and previous commits
     - name: Detect Modified SQL Files
@@ -47,14 +48,17 @@ jobs:
     - name: Execute SQL Files on Snowflake
       if: steps.modified_files.outputs.sql_files != ''
       run: |
+        while read sql_files; do
+        echo "Running $sql_files"
           echo "Executing $sql_file on Snowflake..."
-          ./snowsql -a $SNOWFLAKE_ACCOUNT \
+           snow sql -a $SNOWFLAKE_ACCOUNT \
                     -u $SNOWFLAKE_USER \
                     -p $SNOWFLAKE_PASSWORD \
                     -d $SNOWFLAKE_DATABASE \
                     -r $SNOWFLAKE_ROLE \
                     -w $SNOWFLAKE_WAREHOUSE \
                     -f $sql_files
+        done < modified_sql_files.txt
       env:
         SNOWFLAKE_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
         SNOWFLAKE_USER: ${{ secrets.SF_USERNAME }}
@@ -62,11 +66,3 @@ jobs:
         SNOWFLAKE_DATABASE: ${{ secrets.SF_DATABASE }}
         SNOWFLAKE_ROLE: ${{ secrets.SF_ROLE }}
         SNOWFLAKE_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
-        
-      
-      
-
-    # Step 6: Clean up SnowSQL installation (optional)
-    - name: Clean Up
-      run: |
-        rm -f snowsql-1.2.21-linux_x86_64.bash
