@@ -28,6 +28,13 @@ jobs:
       run: |
         pipx install snowflake-cli
 
+    # Step 3: Add SnowSQL to PATH
+    - name: Add SnowSQL to PATH
+      run: |
+          echo "Adding SnowSQL to PATH"
+          export PATH=$PATH:~/.snowsql/bin
+          snowsql -v  # Check SnowSQL version
+          
     - name: Verify Snowflake CLI Installation
       run: |
         snow --help
