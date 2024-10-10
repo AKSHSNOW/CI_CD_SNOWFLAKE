@@ -31,6 +31,17 @@ jobs:
             snowsql --version  # Confirm that SnowSQL is installed and working
             snowsql --help
 
+    - name: Configure SnowSQL
+      run: |
+            mkdir -p ~/.snowsql  # Create the .snowsql directory if it doesn't exist
+            echo "[connections]" > ~/.snowsql/config  # Start the config file
+            echo "accountname = $SNOWFLAKE_ACCOUNT" >> ~/.snowsql/config
+            echo "username = $SNOWFLAKE_USER" >> ~/.snowsql/config
+            echo "password = $SNOWFLAKE_PASSWORD" >> ~/.snowsql/config
+            echo "warehouse = $SNOWFLAKE_WAREHOUSE" >> ~/.snowsql/config
+            echo "database = $SNOWFLAKE_DATABASE" >> ~/.snowsql/config
+            echo "role = $SNOWFLAKE_ROLE" >> ~/.snowsql/config
+
     # Step 2: Detect modified SQL files between the current and previous commits
     - name: Detect Modified SQL Files
       id: modified_files
