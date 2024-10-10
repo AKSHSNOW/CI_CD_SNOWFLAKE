@@ -22,7 +22,25 @@ jobs:
           curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-1.2.9-linux_x86_64.bash
           SNOWSQL_DEST=~/bin SNOWSQL_LOGIN_SHELL=~/.profile bash snowsql-1.2.9-linux_x86_64.bash
           echo "$HOME/bin" >> $GITHUB_PATH
+          echo "PATH=$HOME/bin:$PATH" >> $GITHUB_ENV
 
+    - name: Check SnowSQL Installation
+      run: |
+            echo $PATH  # Verify that the path includes ~/bin
+            which snowsql  # This should now return the path to the snowsql executable
+            snowsql --version  # Confirm that SnowSQL is installed and working
+            snowsql --help
+
+    - name: Configure SnowSQL
+      run: |
+            mkdir -p ~/.snowsql  # Create the .snowsql directory if it doesn't exist
+            echo "[connections]" > ~/.snowsql/config  # Start the config file
+            echo "accountname = $SNOWFLAKE_ACCOUNT" >> ~/.snowsql/config
+            echo "username = $SNOWFLAKE_USER" >> ~/.snowsql/config
+            echo "password = $SNOWFLAKE_PASSWORD" >> ~/.snowsql/config
+            echo "warehouse = $SNOWFLAKE_WAREHOUSE" >> ~/.snowsql/config
+            echo "database = $SNOWFLAKE_DATABASE" >> ~/.snowsql/config
+            echo "role = $SNOWFLAKE_ROLE" >> ~/.snowsql/config
 
     # Step 2: Detect modified SQL files between the current and previous commits
     - name: Detect Modified SQL Files
@@ -49,22 +67,10 @@ jobs:
       run: |
         while read sql_file; do
         echo "Running $sql_file"
-          echo "Executing $sql_file on Snowflake..."
-          echo "Running $sql_file"
-          echo "Executing $sql_file on Snowflake..."
-          echo "Snowflake Account: $SNOWFLAKE_ACCOUNT"
-          echo "Snowflake User: $SNOWFLAKE_USER"
-          echo "Database: $SNOWFLAKE_DATABASE"
-          echo "Role: $SNOWFLAKE_ROLE"
-          echo "Warehouse: $SNOWFLAKE_WAREHOUSE"
-          
-                snowsql -a $SNOWFLAKE_ACCOUNT \
-                        -u $SNOWFLAKE_USER \
-                        -p $SNOWFLAKE_PASSWORD \
-                        -d $SNOWFLAKE_DATABASE \
-                        -r $SNOWFLAKE_ROLE \
-                        -w $SNOWFLAKE_WAREHOUSE \
-                        
+        echo "Executing $sql_file on Snowflake..."
+        
+        snowsql -a $SNOWFLAKE_ACCOUNT -u $SNOWFLAKE_USER -p $SNOWFLAKE_PASSWORD -d $SNOWFLAKE_DATABASE -r $SNOWFLAKE_ROLE -w $SNOWFLAKE_WAREHOUSE       
+        
         done < modified_sql_files.txt
       env:
         SNOWFLAKE_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
