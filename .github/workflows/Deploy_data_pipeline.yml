@@ -24,18 +24,7 @@ jobs:
           echo "$HOME/bin" >> $GITHUB_PATH
           echo "PATH=$HOME/bin:$PATH" >> $GITHUB_ENV
 
-    - name: Create SnowSQL Configuration
-      run: |
-          mkdir -p $HOME/.snowsql
-          echo "[connections]" > $HOME/.snowsql/config
-          echo "default = my_connection" >> $HOME/.snowsql/config
-          echo "[my_connection]" >> $HOME/.snowsql/config
-          echo "accountname = ${{ secrets.SF_ACCOUNT }}" >> $HOME/.snowsql/config
-          echo "username = ${{ secrets.SF_USERNAME }}" >> $HOME/.snowsql/config
-          echo "password = ${{ secrets.SF_PASSWORD }}" >> $HOME/.snowsql/config
-          echo "database = ${{ secrets.SF_DATABASE }}" >> $HOME/.snowsql/config
-          echo "warehouse = ${{ secrets.SF_WAREHOUSE }}" >> $HOME/.snowsql/config
-          echo "role = ${{ secrets.SF_ROLE }}" >> $HOME/.snowsql/config
+    
 
     - name: Set SnowSQL Config Path
       run: 
@@ -78,7 +67,20 @@ jobs:
       run: |
           echo "The modified SQL files are: ${{ env.sql_files }}"
 
-    
+    - name: Create SnowSQL Configuration
+      run: |
+          mkdir -p $HOME/.snowsql
+          echo "[connections]" > $HOME/.snowsql/config
+          echo "default = my_connection" >> $HOME/.snowsql/config
+          echo "[my_connection]" >> $HOME/.snowsql/config
+          echo "accountname = ${{ secrets.SF_ACCOUNT }}" >> $HOME/.snowsql/config
+          echo "username = ${{ secrets.SF_USERNAME }}" >> $HOME/.snowsql/config
+          echo "password = ${{ secrets.SF_PASSWORD }}" >> $HOME/.snowsql/config
+          echo "database = ${{ secrets.SF_DATABASE }}" >> $HOME/.snowsql/config
+          echo "warehouse = ${{ secrets.SF_WAREHOUSE }}" >> $HOME/.snowsql/config
+          echo "role = ${{ secrets.SF_ROLE }}" >> $HOME/.snowsql/config
+
+          snowsql
 
     # Step 4: Run each modified SQL file on Snowflake using SnowSQL
     - name: Execute SQL Files on Snowflake
