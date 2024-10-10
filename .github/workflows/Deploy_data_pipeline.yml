@@ -23,13 +23,18 @@ jobs:
     - name: Download SnowSQL Installer
       run: |
           wget https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.3/linux_x86_64/snowsql-1.3.2-linux_x86_64.bash
-
+          chmod +x snowsql-1.3.2-linux_x86_64.bash
     - name: Install SnowSQL
       run: |
           set -x
-          bash snowsql-1.3.2-linux_x86_64.bash --install-dir $HOME/.snowsql --non-interactive > install.log 2>&1
-          cat install.log
+          bash snowsql-1.3.2-linux_x86_64.bash --install-dir $HOME/.snowsql --non-interactive > install.log 2>&1 || {
+            echo "SnowSQL installation failed!"
+            echo "Error log:"
+            cat install.log
+            exit 1
+          }
           echo "$HOME/.snowsql" >> $GITHUB_PATH
+
 
     - name: Verify SnowSQL Installation
       run: |
