@@ -64,7 +64,7 @@ jobs:
                         -d $SNOWFLAKE_DATABASE \
                         -r $SNOWFLAKE_ROLE \
                         -w $SNOWFLAKE_WAREHOUSE \
-                        -f "$sql_file"
+                        -f $sql_file
         done < modified_sql_files.txt
       env:
         SNOWFLAKE_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
