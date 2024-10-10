@@ -27,19 +27,7 @@ jobs:
     - name: Install Snowflake CLI (snow)
       run: |
         pipx install snowflake-cli
-        
-        # Confirm SnowSQL installation
-          find $HOME -name snowsql  # Find SnowSQL binary in the home directory
 
-    # Step 3: Add SnowSQL to PATH
-    - name: Add SnowSQL to PATH
-      run: |
-          SNOWSQL_PATH=$(find $HOME -name snowsql | head -n 1)  # Find the SnowSQL path
-          echo "SnowSQL binary found at: $SNOWSQL_PATH"
-          export PATH="$PATH:$(dirname $SNOWSQL_PATH)"
-          echo "PATH is now: $PATH"
-          snowsql -v  # Check SnowSQL installation
-          
     - name: Verify Snowflake CLI Installation
       run: |
         snow --help
@@ -63,7 +51,7 @@ jobs:
         while read sql_files; do
         echo "Running $sql_files"
           echo "Executing $sql_file on Snowflake..."
-          ./snowsql -a $SNOWFLAKE_ACCOUNT \
+           snow sql -a $SNOWFLAKE_ACCOUNT \
                     -u $SNOWFLAKE_USER \
                     -p $SNOWFLAKE_PASSWORD \
                     -d $SNOWFLAKE_DATABASE \
@@ -78,11 +66,3 @@ jobs:
         SNOWFLAKE_DATABASE: ${{ secrets.SF_DATABASE }}
         SNOWFLAKE_ROLE: ${{ secrets.SF_ROLE }}
         SNOWFLAKE_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
-        
-      
-      
-
-    # Step 6: Clean up SnowSQL installation (optional)
-    - name: Clean Up
-      run: |
-        rm -f snowsql-1.2.21-linux_x86_64.bash
