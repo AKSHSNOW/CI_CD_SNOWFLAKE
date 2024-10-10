@@ -31,7 +31,7 @@ jobs:
           echo "default = my_connection" >> $HOME/.snowsql/config
           echo "[my_connection]" >> $HOME/.snowsql/config
           echo "accountname = ${{ secrets.SF_ACCOUNT }}" >> $HOME/.snowsql/config
-          echo "username = ${{ secrets.SF_USER }}" >> $HOME/.snowsql/config
+          echo "username = ${{ secrets.SF_USERNAME }}" >> $HOME/.snowsql/config
           echo "password = ${{ secrets.SF_PASSWORD }}" >> $HOME/.snowsql/config
           echo "database = ${{ secrets.SF_DATABASE }}" >> $HOME/.snowsql/config
           echo "warehouse = ${{ secrets.SF_WAREHOUSE }}" >> $HOME/.snowsql/config
