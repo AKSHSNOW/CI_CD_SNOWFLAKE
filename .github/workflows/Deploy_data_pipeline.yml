@@ -22,12 +22,17 @@ jobs:
           curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-1.2.9-linux_x86_64.bash
           SNOWSQL_DEST=~/bin SNOWSQL_LOGIN_SHELL=~/.profile bash snowsql-1.2.9-linux_x86_64.bash
           echo "$HOME/bin" >> $GITHUB_PATH
-
+          
+      - name: Debug Commit Values
+        run: |
+              echo "Before commit: ${GITHUB_EVENT_BEFORE}"
+              echo "Current commit: ${GITHUB_SHA}"
+               
       # Step 2: Detect modified SQL files between the current and previous commits
       - name: Detect Modified SQL Files
         id: modified_files
         run: |
-         git diff --name-only --diff-filter=ADMRT ${GITHUB_EVENT_BEFORE} ${GITHUB_SHA} -- '*.sql' > modified_sql_files.txt
+         git diff --name-only --diff-filter=ACMRT ${GITHUB_EVENT_BEFORE} ${GITHUB_SHA} -- '*.sql' > modified_sql_files.txt
 
           # Check if any SQL files were found and set environment variable
             if [ -s modified_sql_files.txt ]; then
