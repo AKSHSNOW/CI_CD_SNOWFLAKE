@@ -17,12 +17,19 @@ jobs:
       with:
         fetch-depth: 0
 
-    # Install SnowSQL (make sure it is available in the runner)
+    - name: Download SnowSQL Installer
+      run: |
+          wget https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.3/linux_x86_64/snowsql-1.3.2-linux_x86_64.bash
+
     - name: Install SnowSQL
       run: |
-        wget https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.3/linux_x86_64/snowsql-1.3.2-linux_x86_64.bash
-        chmod +x snowsql-1.3.2-linux_x86_64.bash
-        ./snowsql-1.3.2-linux_x86_64.bash -y
+          set -x
+          bash snowsql-1.3.2-linux_x86_64.bash --install-dir /usr/local/bin --non-interactive
+          echo "/usr/local/bin" >> $GITHUB_PATH
+
+    - name: Verify SnowSQL Installation
+      run: |
+          /usr/local/bin/snowsql --version
 
 
     # Step 2: Detect modified SQL files between the current and previous commits
