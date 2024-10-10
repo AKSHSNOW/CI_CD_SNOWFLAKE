@@ -32,7 +32,13 @@ jobs:
       - name: Detect Modified SQL Files
         id: modified_files
         run: |
-         git diff --name-only --diff-filter=ACMRT ${GITHUB_EVENT_BEFORE} ${GITHUB_SHA} -- '*.sql' > modified_sql_files.txt
+
+          PREV_COMMIT=$(git rev-parse HEAD^)
+          CURRENT_COMMIT=$(git rev-parse HEAD)
+          echo "Previous commit: $PREV_COMMIT"
+          echo "Current commit: $CURRENT_COMMIT"
+
+          git diff --name-only --diff-filter=ACMRT $PREV_COMMIT $CURRENT_COMMIT -- '*.sql' > modified_sql_files.txt
 
           # Check if any SQL files were found and set environment variable
             if [ -s modified_sql_files.txt ]; then
