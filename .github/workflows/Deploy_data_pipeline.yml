@@ -22,7 +22,14 @@ jobs:
           curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-1.2.9-linux_x86_64.bash
           SNOWSQL_DEST=~/bin SNOWSQL_LOGIN_SHELL=~/.profile bash snowsql-1.2.9-linux_x86_64.bash
           echo "$HOME/bin" >> $GITHUB_PATH
-          snowsql --help
+          echo "PATH=$HOME/bin:$PATH" >> $GITHUB_ENV
+
+    - name: Check SnowSQL Installation
+      run: |
+            echo $PATH  # Verify that the path includes ~/bin
+            which snowsql  # This should now return the path to the snowsql executable
+            snowsql --version  # Confirm that SnowSQL is installed and working
+            snowsql --help
 
     # Step 2: Detect modified SQL files between the current and previous commits
     - name: Detect Modified SQL Files
