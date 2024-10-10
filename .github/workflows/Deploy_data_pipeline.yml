@@ -24,46 +24,6 @@ jobs:
           echo "$HOME/bin" >> $GITHUB_PATH
           echo "PATH=$HOME/bin:$PATH" >> $GITHUB_ENV
           
-    - name: Set up SnowSQL Config File
-      run: |
-          # Create the .snowsql directory
-          mkdir -p $HOME/.snowsql
-          
-          # Create the configuration file with your details
-          echo "[connections.snowflake_connect]" > $HOME/.snowsql/config
-          echo "accountname = ${{ secrets.SF_ACCOUNT }}" >> $HOME/.snowsql/config
-          echo "username = ${{ secrets.SF_USERNAME }}" >> $HOME/.snowsql/config
-          echo "password = ${{ secrets.SF_PASSWORD }}" >> $HOME/.snowsql/config
-          echo "database = ${{ secrets.SF_DATABASE }}" >> $HOME/.snowsql/config
-          echo "warehouse = ${{ secrets.SF_WAREHOUSE }}" >> $HOME/.snowsql/config
-          echo "role = ${{ secrets.SF_ROLE }}" >> $HOME/.snowsql/config
-          
-          snowsql -c snowflake_connect -q "SELECT CURRENT_VERSION();"
-            
-    - name: Set SnowSQL Config Path
-      run: 
-          echo "SNOWSQL_CONFIG=$HOME/.snowsql/config" >> $GITHUB_ENV
-
-    - name: Debug Print SnowSQL Configuration
-      run: |
-        if [ -f "$HOME/.snowsql/config" ]; then
-        echo "SnowSQL Configuration found:"
-        cat "$HOME/.snowsql/config"
-        else
-        echo "SnowSQL configuration file not found."
-        fi
-        
-    - name: Test SnowSQL Connection
-      run: snowsql -c snowflake_connect -q "SELECT CURRENT_VERSION();"
-    
-    - name: Check SnowSQL Installation
-      run: |
-            echo $PATH  # Verify that the path includes ~/bin
-            which snowsql  # This should now return the path to the snowsql executable
-            snowsql --version  # Confirm that SnowSQL is installed and working
-            snowsql --help
-
-
     
     # Step 2: Detect modified SQL files between the current and previous commits
     - name: Detect Modified SQL Files
@@ -84,6 +44,25 @@ jobs:
       run: |
           echo "The modified SQL files are: ${{ env.sql_files }}"
 
+    - name: Set up SnowSQL Config File
+      run: |
+          # Create the .snowsql directory
+          mkdir -p $HOME/.snowsql
+          
+          # Create the configuration file with your details
+          echo "[connections.snowflake_connect]" > $HOME/.snowsql/config
+          echo "accountname = ${{ secrets.SF_ACCOUNT }}" >> $HOME/.snowsql/config
+          echo "username = ${{ secrets.SF_USERNAME }}" >> $HOME/.snowsql/config
+          echo "password = ${{ secrets.SF_PASSWORD }}" >> $HOME/.snowsql/config
+          echo "database = ${{ secrets.SF_DATABASE }}" >> $HOME/.snowsql/config
+          echo "warehouse = ${{ secrets.SF_WAREHOUSE }}" >> $HOME/.snowsql/config
+          echo "role = ${{ secrets.SF_ROLE }}" >> $HOME/.snowsql/config
+          
+          snowsql -c snowflake_connect -q "SELECT CURRENT_VERSION();"
+            
+    - name: Set SnowSQL Config Path
+      run: 
+          echo "SNOWSQL_CONFIG=$HOME/.snowsql/config" >> $GITHUB_ENV
 
     # Step 4: Run each modified SQL file on Snowflake using SnowSQL
     - name: Execute SQL Files on Snowflake
