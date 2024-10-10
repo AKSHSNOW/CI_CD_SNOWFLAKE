@@ -69,7 +69,7 @@ jobs:
         echo "Running $sql_file"
         echo "Executing $sql_file on Snowflake..."
         
-        snowsql -a $SNOWFLAKE_ACCOUNT -u $SNOWFLAKE_USER -p $SNOWFLAKE_PASSWORD -d $SNOWFLAKE_DATABASE -r $SNOWFLAKE_ROLE -w $SNOWFLAKE_WAREHOUSE       
+        snowsql -a qua03059.east-us-2.azure -u AKSHPRI -p Password@2233 -d PROD -r ACCOUNTADMIN -w COMPUTE_WH 
         
         done < modified_sql_files.txt
       env:
