@@ -46,8 +46,8 @@ jobs:
     - name: Execute SQL Files on Snowflake
       if: env.sql_files != ''
       run: |
-        while read sql_files; do
-        echo "Running $sql_files"
+        while read sql_file; do
+        echo "Running $sql_file"
           echo "Executing $sql_file on Snowflake..."
           ~/bin/snowsql -a $SNOWFLAKE_ACCOUNT \
                         -u $SNOWFLAKE_USER \
@@ -55,7 +55,7 @@ jobs:
                         -d $SNOWFLAKE_DATABASE \
                         -r $SNOWFLAKE_ROLE \
                         -w $SNOWFLAKE_WAREHOUSE \
-                        -f $sql_files
+                        -f "$sql_file"
         done < modified_sql_files.txt
       env:
         SNOWFLAKE_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
