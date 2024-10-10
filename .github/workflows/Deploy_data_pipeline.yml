@@ -59,7 +59,7 @@ jobs:
         while read sql_files; do
         echo "Running $sql_files"
           echo "Executing $sql_file on Snowflake..."
-           snow sql -a $SNOWFLAKE_ACCOUNT \
+            snowsql -a $SNOWFLAKE_ACCOUNT \
                     -u $SNOWFLAKE_USER \
                     -p $SNOWFLAKE_PASSWORD \
                     -d $SNOWFLAKE_DATABASE \
