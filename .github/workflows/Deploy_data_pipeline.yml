@@ -37,6 +37,10 @@ jobs:
           echo "warehouse = ${{ secrets.SF_WAREHOUSE }}" >> $HOME/.snowsql/config
           echo "role = ${{ secrets.SF_ROLE }}" >> $HOME/.snowsql/config
 
+    - name: Set SnowSQL Config Path
+      run: 
+          echo "SNOWSQL_CONFIG=$HOME/.snowsql/config" >> $GITHUB_ENV
+
     - name: Debug Print SnowSQL Configuration
       run: |
         if [ -f "$HOME/.snowsql/config" ]; then
@@ -53,6 +57,8 @@ jobs:
             snowsql --version  # Confirm that SnowSQL is installed and working
             snowsql --help
 
+
+    
     # Step 2: Detect modified SQL files between the current and previous commits
     - name: Detect Modified SQL Files
       id: modified_files
@@ -71,6 +77,8 @@ jobs:
     - name: Print Modified SQL Files
       run: |
           echo "The modified SQL files are: ${{ env.sql_files }}"
+
+    
 
     # Step 4: Run each modified SQL file on Snowflake using SnowSQL
     - name: Execute SQL Files on Snowflake
