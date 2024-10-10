@@ -24,20 +24,22 @@ jobs:
           echo "$HOME/bin" >> $GITHUB_PATH
           echo "PATH=$HOME/bin:$PATH" >> $GITHUB_ENV
           
-    - name: Create SnowSQL Configuration
+    - name: Set up SnowSQL Config File
       run: |
+          # Create the .snowsql directory
           mkdir -p $HOME/.snowsql
-          echo "[connections]" > $HOME/.snowsql/config
-          echo "default = my_connection" >> $HOME/.snowsql/config
-          echo "[my_connection]" >> $HOME/.snowsql/config
+          
+          # Create the configuration file with your details
+          echo "[connections.snowflake_connect]" > $HOME/.snowsql/config
           echo "accountname = ${{ secrets.SF_ACCOUNT }}" >> $HOME/.snowsql/config
           echo "username = ${{ secrets.SF_USERNAME }}" >> $HOME/.snowsql/config
           echo "password = ${{ secrets.SF_PASSWORD }}" >> $HOME/.snowsql/config
           echo "database = ${{ secrets.SF_DATABASE }}" >> $HOME/.snowsql/config
           echo "warehouse = ${{ secrets.SF_WAREHOUSE }}" >> $HOME/.snowsql/config
           echo "role = ${{ secrets.SF_ROLE }}" >> $HOME/.snowsql/config
-
-    
+          
+          snowsql -c snowflake_connect -q "SELECT CURRENT_VERSION();"
+            
     - name: Set SnowSQL Config Path
       run: 
           echo "SNOWSQL_CONFIG=$HOME/.snowsql/config" >> $GITHUB_ENV
@@ -91,7 +93,7 @@ jobs:
         echo "Running $sql_file"
         echo "Executing $sql_file on Snowflake..."
         
-        snowsql -c my_connection
+        snowsql -c snowflake_connect
 
         
         done < modified_sql_files.txt
