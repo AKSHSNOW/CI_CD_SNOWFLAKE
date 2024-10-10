@@ -54,7 +54,7 @@ jobs:
 
     # Step 4: Run each modified SQL file on Snowflake using SnowSQL
     - name: Execute SQL Files on Snowflake
-      if: steps.modified_files.outputs.sql_files != ''
+      if: env.sql_files != ''
       run: |
         while read sql_files; do
         echo "Running $sql_files"
