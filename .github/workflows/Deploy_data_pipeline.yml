@@ -49,13 +49,13 @@ jobs:
         while read sql_files; do
         echo "Running $sql_files"
           echo "Executing $sql_file on Snowflake..."
-               snow -a $SNOWFLAKE_ACCOUNT \
-                    -u $SNOWFLAKE_USER \
-                    -p $SNOWFLAKE_PASSWORD \
-                    -d $SNOWFLAKE_DATABASE \
-                    -r $SNOWFLAKE_ROLE \
-                    -w $SNOWFLAKE_WAREHOUSE \
-                    -f $sql_files
+          ~/bin/snowsql -a $SNOWFLAKE_ACCOUNT \
+                        -u $SNOWFLAKE_USER \
+                        -p $SNOWFLAKE_PASSWORD \
+                        -d $SNOWFLAKE_DATABASE \
+                        -r $SNOWFLAKE_ROLE \
+                        -w $SNOWFLAKE_WAREHOUSE \
+                        -f $sql_files
         done < modified_sql_files.txt
       env:
         SNOWFLAKE_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
