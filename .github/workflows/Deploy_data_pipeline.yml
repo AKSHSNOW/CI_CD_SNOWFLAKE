@@ -27,14 +27,17 @@ jobs:
     - name: Install Snowflake CLI (snow)
       run: |
         pipx install snowflake-cli
+        
+        # Confirm SnowSQL installation
+          find $HOME -name snowsql  # Find SnowSQL binary in the home directory
 
     # Step 3: Add SnowSQL to PATH
     - name: Add SnowSQL to PATH
       run: |
-          echo "Adding SnowSQL to PATH"
-          export PATH="$PATH:$HOME/.snowsql/bin"
+          SNOWSQL_PATH=$(find $HOME -name snowsql | head -n 1)  # Find the SnowSQL path
+          echo "SnowSQL binary found at: $SNOWSQL_PATH"
+          export PATH="$PATH:$(dirname $SNOWSQL_PATH)"
           echo "PATH is now: $PATH"
-          ls -al $HOME/.snowsql/bin  # List the contents of the SnowSQL directory to confirm installation
           snowsql -v  # Check SnowSQL installation
           
     - name: Verify Snowflake CLI Installation
