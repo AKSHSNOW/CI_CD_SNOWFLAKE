@@ -43,6 +43,10 @@ jobs:
           exit 0
         fi
         cat modified_sql_files.txt
+        
+    - name: Debug Print modified SQL files
+      run: |
+        echo "Modified SQL files: ${{ steps.modified_files.outputs.sql_files }}"
 
     # Step 5: Run each modified SQL file on Snowflake using SnowSQL
     - name: Execute SQL Files on Snowflake
