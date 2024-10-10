@@ -24,6 +24,17 @@ jobs:
           echo "$HOME/bin" >> $GITHUB_PATH
           echo "PATH=$HOME/bin:$PATH" >> $GITHUB_ENV
 
+    - name: Configure SnowSQL
+      run: |
+            mkdir -p ~/.snowsql  # Create the .snowsql directory if it doesn't exist
+            echo "[connections]" > ~/.snowsql/config  # Start the config file
+            echo "accountname = $SNOWFLAKE_ACCOUNT" >> ~/.snowsql/config
+            echo "username = $SNOWFLAKE_USER" >> ~/.snowsql/config
+            echo "password = $SNOWFLAKE_PASSWORD" >> ~/.snowsql/config
+            echo "warehouse = $SNOWFLAKE_WAREHOUSE" >> ~/.snowsql/config
+            echo "database = $SNOWFLAKE_DATABASE" >> ~/.snowsql/config
+            echo "role = $SNOWFLAKE_ROLE" >> ~/.snowsql/config
+
     - name: Check SnowSQL Installation
       run: |
             echo $PATH  # Verify that the path includes ~/bin
@@ -71,7 +82,6 @@ jobs:
         
         snowsql -a qua03059.east-us-2.azure \
          -u AKSHPRI \
-         -p '${{ secrets.SF_PASSWORD }}'
          -d PROD \
          -r ACCOUNTADMIN \
          -w COMPUTE_WH
