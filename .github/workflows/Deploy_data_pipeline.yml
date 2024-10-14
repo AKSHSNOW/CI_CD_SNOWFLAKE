@@ -1,4 +1,4 @@
-name: Run Modified SQL Files on Snowflake
+name: SF_RUN_DEV
 
 on:
   push:
@@ -8,31 +8,66 @@ on:
 
 jobs:
   run-modified-sql:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04  # Use Ubuntu 22.04 for compatibility
     
     steps:
-      # Step 1: Checkout the repository code
+    # Step 1: Checkout the repository code
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
 
+
+      # Step 2: Install required packages
+      - name: Install required packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget
+          sudo apt-get install -y openssl libssl-dev
+
+
+      # Step 3: Install SnowSQL
       - name: Install SnowSQL
         run: |
           curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-1.2.9-linux_x86_64.bash
           SNOWSQL_DEST=~/bin SNOWSQL_LOGIN_SHELL=~/.profile bash snowsql-1.2.9-linux_x86_64.bash
           echo "$HOME/bin" >> $GITHUB_PATH
-          
-      - name: Debug Commit Values
+
+
+      # Step 4: Set up SnowSQL Config File and create the .snowsql directory
+      - name: Set up SnowSQL Config File
+        env:
+          SF_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
+          SF_USERNAME: ${{ secrets.SF_USERNAME }}
+          SF_ROLE: ${{ secrets.SF_ROLE }}
+          SF_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
+          SF_DATABASE: ${{ secrets.SF_DATABASE }}
+          SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+
         run: |
-              echo "Before commit: ${GITHUB_EVENT_BEFORE}"
-              echo "Current commit: ${GITHUB_SHA}"
-               
-      # Step 2: Detect modified SQL files between the current and previous commits
+          # Create the .snowsql directory
+          mkdir -p $HOME/.snowsql
+          
+          # Create the configuration file with your details
+          echo "[connections.snowflake_connect]" > $HOME/.snowsql/config
+          echo "accountname = $SF_ACCOUNT" >> $HOME/.snowsql/config
+          echo "username = $SF_USERNAME" >> $HOME/.snowsql/config
+          echo "password = $SNOWFLAKE_PASSWORD" >> $HOME/.snowsql/config
+          echo "database = $SF_DATABASE" >> $HOME/.snowsql/config
+          echo "warehouse = $SF_WAREHOUSE" >> $HOME/.snowsql/config
+          echo "role = $SF_ROLE" >> $HOME/.snowsql/config
+
+
+      # Step 5: Run SnowSQL to verify the installation
+      - name: Verify SnowSQL Configuration
+        run: |
+          snowsql -c snowflake_connect
+
+
+      # Step 6: Detect modified SQL files between the current and previous commits
       - name: Detect Modified SQL Files
         id: modified_files
         run: |
-
           PREV_COMMIT=$(git rev-parse HEAD^)
           CURRENT_COMMIT=$(git rev-parse HEAD)
           echo "Previous commit: $PREV_COMMIT"
@@ -41,43 +76,38 @@ jobs:
           git diff --name-only --diff-filter=ACMRT $PREV_COMMIT $CURRENT_COMMIT -- '*.sql' > modified_sql_files.txt
 
           # Check if any SQL files were found and set environment variable
-            if [ -s modified_sql_files.txt ]; then
+          if [ -s modified_sql_files.txt ]; then
             sql_files=$(cat modified_sql_files.txt | tr '\n' ' ')
             echo "sql_files=$sql_files" >> $GITHUB_ENV
-            else
+          else
             echo "No SQL files modified."
             echo "sql_files=" >> $GITHUB_ENV
-            fi
-        
-      # Step 3: Print the output of the previous step
+          fi
+
+
+      # Step 7: Print the output of the previous step
       - name: Print Modified SQL Files
         run: |
           echo "The modified SQL files are: ${{ env.sql_files }}"
 
-      - name: Set up SnowSQL Config File
-        run: |
-          # Create the .snowsql directory
-          mkdir -p $HOME/.snowsql
-          
-          # Create the configuration file with your details
-          echo "[connections.snowflake_connect]" > $HOME/.snowsql/config
-          echo "accountname = ${{ secrets.SF_ACCOUNT }}" >> $HOME/.snowsql/config
-          echo "username = ${{ secrets.SF_USERNAME }}" >> $HOME/.snowsql/config
-          echo "password = ${{ secrets.SF_PASSWORD }}" >> $HOME/.snowsql/config
-          echo "database = ${{ secrets.SF_DATABASE }}" >> $HOME/.snowsql/config
-          echo "warehouse = ${{ secrets.SF_WAREHOUSE }}" >> $HOME/.snowsql/config
-          echo "role = ${{ secrets.SF_ROLE }}" >> $HOME/.snowsql/config
 
-      - name: Verify SnowSQL Configuration
-        run: |
-          snowsql -c snowflake_connect -q "SELECT CURRENT_VERSION();"
-
-      # Step 4: Run each modified SQL file on Snowflake using SnowSQL
+      # Step 8: Run each modified SQL file on Snowflake using SnowSQL
       - name: Execute SQL Files on Snowflake
         if: env.sql_files != ''
         run: |
-          while read sql_file; do
+            set -e  # Enable exit on error
+            while read sql_file; do
             echo "Running $sql_file"
             echo "Executing $sql_file on Snowflake..."
-            snowsql -c snowflake_connect -f "$sql_file"
-          done < modified_sql_files.txt
+            # Run the SQL file and capture the exit status
+            snowsql -c snowflake_connect -f "$sql_file" -o log_level=DEBUG || {
+            echo "Execution of $sql_file failed."
+            exit 1  # Fail the workflow if an error occurs
+            }
+            done < modified_sql_files.txt 
+
+
+      # Step 9: Clean Up (optional)
+      - name: Clean Up
+        run: |
+          rm -f snowsql-1.2.9-linux_x86_64.bash
