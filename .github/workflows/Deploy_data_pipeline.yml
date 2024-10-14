@@ -115,13 +115,13 @@ jobs:
             fi
             done < modified_sql_files.txt
 
-    # Check if any of the SQL executions failed
-    if [ $failed -ne 0 ]; then
-      echo "One or more SQL files failed. Marking the workflow as failed."
-      exit 1  # Fail the workflow
-    else
-      echo "All SQL files executed successfully."
-    fi
+            # Check if any of the SQL executions failed
+            if [ $failed -ne 0 ]; then
+            echo "One or more SQL files failed. Marking the workflow as failed."
+            exit 1  # Fail the workflow
+            else
+            echo "All SQL files executed successfully."
+            fi
 
 
 
