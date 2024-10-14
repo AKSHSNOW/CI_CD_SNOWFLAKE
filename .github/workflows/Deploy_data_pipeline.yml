@@ -99,11 +99,12 @@ jobs:
             while read sql_file; do
             echo "Running $sql_file"
             echo "Executing $sql_file on Snowflake..."
+
             # Run the SQL file and capture the exit status
-            snowsql -c snowflake_connect -f "$sql_file" -o log_level=DEBUG || {
+            if ! snowsql -c snowflake_connect -f "$sql_file" -o log_level=DEBUG; then
             echo "Execution of $sql_file failed."
             exit 1  # Fail the workflow if an error occurs
-            }
+            fi
             done < modified_sql_files.txt 
 
 
