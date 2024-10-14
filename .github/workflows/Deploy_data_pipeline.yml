@@ -95,28 +95,34 @@ jobs:
       - name: Execute SQL Files on Snowflake
         if: env.sql_files != ''
         run: |
-              set +e  # Allow the script to continue even if there is an error
-              failed=0  # Variable to track failures
+            set +e  # Allow the script to continue even if there is an error
+            failed=0  # Variable to track failures
 
-              # Process each SQL file in the modified list
-              while read sql_file; do
-              echo "Running $sql_file"
-              echo "Executing $sql_file on Snowflake..."
+            # Process each SQL file in the modified list
+            while read sql_file; do
+            echo "Running $sql_file"
+            echo "Executing $sql_file on Snowflake..."
 
-              # Run the SQL file and capture the exit status
-              snowsql -c snowflake_connect -f "$sql_file" -o log_level=DEBUG
-              exit_status=$?
+            # Run the SQL file and capture the exit status
+            snowsql -c snowflake_connect -f "$sql_file" -o log_level=DEBUG
+            exit_status=$?
 
-              if [ $exit_status -ne 0 ]; then
-              echo "Execution of $sql_file failed with exit code $exit_status."
-              failed=1  # Mark the failure
-              fi
-              done < modified_sql_files.txt
+            if [ $exit_status -ne 0 ]; then
+            echo "Execution of $sql_file failed with exit code $exit_status."
+            failed=1  # Mark the failure
+            else
+            echo "$sql_file executed successfully."
+            fi
+            done < modified_sql_files.txt
 
-              if [ $failed -ne 0 ]; then
-              echo "One or more SQL files failed."
-              exit 1  # Fail the workflow
-              fi
+    # Check if any of the SQL executions failed
+    if [ $failed -ne 0 ]; then
+      echo "One or more SQL files failed. Marking the workflow as failed."
+      exit 1  # Fail the workflow
+    else
+      echo "All SQL files executed successfully."
+    fi
+
 
 
 
